@@ -3,6 +3,7 @@ package com.benzino.game;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,13 +11,18 @@ import android.graphics.Rect;
 
 import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.Random;
+
+
 
 /**
  * Created by Anas on 05/07/2015.
@@ -34,6 +40,7 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
      *  @touching variable to check if the user is touching the screen
      *  @loop instance of the Loop class
      */
+
     private float x;
     private float y;
 
@@ -57,6 +64,8 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
     private int touched = 0;
     private int touch = 0;
     private Loop loop;
+
+    private EditText usernameEditText;
 
     /**
      * Calls the super() method to give us our surfaceView to work with
@@ -153,6 +162,14 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
 
     public void setTime(int time) {
         this.time = time;
+    }
+
+    public Loop getLoop() {
+        return loop;
+    }
+
+    public void setLoop(Loop loop) {
+        this.loop = loop;
     }
 
     public void incrementTime(int count){
@@ -298,14 +315,27 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
 
     public void alertDialog() {
         /*
-                                * Alert Dialog
-                                * */
+         * Alert Dialog
+         * */
 
-        if(time  == 10){
+        if(time  == 60){
+            /*
+             * Inflate the XML view. activity_main is in
+             * res/layout/form_elements.xml
+             */
 
-            AlertDialog alert = new AlertDialog.Builder(getContext())
-                    .setTitle("Title")
-                    .setMessage("Time is up \n ball touched "+touched+" times")
+            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            final View inputView = inflater.inflate(R.layout.input, null, false);
+
+            usernameEditText = (EditText) inputView.findViewById(R.id.inputEditText);
+
+            //Create a database where to store the data
+            final DatabaseHandler db = new DatabaseHandler(getContext());
+
+            AlertDialog alert = new AlertDialog.Builder(getContext()).setView(inputView)
+                    .setTitle("Time is up!")
+                    .setMessage("Ball touched "+touched+" times")
                     .setPositiveButton("Play again", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // continue with delete
@@ -315,10 +345,31 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
                             dialog.dismiss();
                         }
                     })
-                    .setNegativeButton("Continue", new DialogInterface.OnClickListener() {
+                    .setNegativeButton("Save your score", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // do nothing
-                            dialog.dismiss();
+                            String username = usernameEditText.getText().toString();
+
+                            if(username.length() == 0) {
+                                Toast.makeText(getContext(), "Please enter a username", Toast.LENGTH_SHORT).show();
+                            }else{
+                                Log.d("ANAS", "Inserting-----------------------------------");
+
+                                Log.d("ANAS", "USERNAME:" + username);
+                                Log.d("Anas", "Score: " + touched);
+
+                                db.createTest(new Test(username, touched, touch));
+
+                                //go to the list of best scores page
+                                Intent intent = new Intent(getContext(), BestScoreActivity.class);
+                                getContext().startActivity(intent);
+                                //Interupting the Game Loop
+                                loop.interrupt();
+                                //Dismisses the dialog box
+                                dialog.dismiss();
+
+                            }
+
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -328,9 +379,9 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
 
         }
 
-                                /*
-                                * Finish Alert Dialog
-                                * */
+    /*
+     * Finish Alert Dialog
+     * */
     }
 
     /**
@@ -361,8 +412,13 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         boolean retry = true ;
+        time = 0;
+        touch = 0;
+        touched = 0;
+        //loop.isRunning(false);
+        //loop.interrupt();
 
-        loop.isRunning(false);
+        /**
         while(retry){
             try {
                 loop.join();
@@ -371,5 +427,7 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
                 e.printStackTrace();
             }
         }
+
+         */
     }
 }

@@ -29,6 +29,8 @@ public class GameActivity extends Activity {
      *                           previously being shut down then this Bundle contains the data it most
      *                           recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
      */
+
+    private Thread thread;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +40,7 @@ public class GameActivity extends Activity {
 
         view = new AnimationView(this);
 
-        Thread t = new Thread() {
+        thread = new Thread() {
 
             @Override
             public void run() {
@@ -63,7 +65,7 @@ public class GameActivity extends Activity {
             }
         };
 
-        t.start();
+        thread.start();
 
 
         view.setOnTouchListener(new View.OnTouchListener() {
@@ -127,4 +129,17 @@ public class GameActivity extends Activity {
         setContentView(view);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        thread.interrupt();
+        view.getLoop();
+
+        view.surfaceDestroyed(view.getHolder());
+        Log.d("ANAS", "IS THE LOOP ALIVE" + view.getLoop().isAlive());
+        Log.d("ANAS", "IS THE TIME ALIVE" + thread.isAlive());
+        Log.d("ANAS", "THREAD STATUS: " + thread.getState());
+        Log.d("ANAS", "LOOP STATUS: " + view.getLoop().getState());
+
+    }
 }

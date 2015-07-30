@@ -54,7 +54,7 @@ public class Loop extends Thread {
     @Override
     public void run() {
         Canvas canvas;
-        while(run){
+        while(!isInterrupted()){
             long cTime = System.currentTimeMillis();
             if((cTime - time) <= (1000/fps)){
                 canvas = null;
