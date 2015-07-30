@@ -1,10 +1,14 @@
 package com.benzino.game;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+
+import android.os.Looper;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -40,16 +44,17 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
     private float height;
 
     private float circleRadius;
-    private Paint circlePaint;
 
+    private Paint circlePaint;
     private Paint textPaint;
+    private Paint timePaint;
 
     private boolean touching = false;
 
     private int time = 0 ;
 
     private float rate = 0  ;
-    private int z = 0;
+    private int touched = 0;
     private int touch = 0;
     private Loop loop;
 
@@ -71,6 +76,13 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
         textPaint = new Paint();
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(16);
+
+        timePaint = new Paint();
+        timePaint.setColor(Color.BLUE);
+        timePaint.setTextAlign(Paint.Align.CENTER);
+        timePaint.setTextSize(22);
+
+
         vx = 2;
         vy = 2;
     }
@@ -97,6 +109,14 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void setY(float y) {
         this.y = y;
+    }
+
+    public int getTouched() {
+        return touched;
+    }
+
+    public void setTouched(int touched) {
+        this.touched = touched;
     }
 
     public float getCircleRadius() {
@@ -145,7 +165,7 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
 
     public void success(){
         if(touch != 0)
-            rate = ((z/touch)*100);
+            rate = ((touched/touch)*100);
     }
 
     public void increaseSpeed(float count){
@@ -159,7 +179,7 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
         else
             vy -= count ;
 
-        z++;
+        touched++;
     }
 
     public void decreaseSpeed(float count){
@@ -193,7 +213,7 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
 
     public void incrementTouch(){
         touch++;
-        rate = (float)((z/touch)*100);
+        rate = (float)((touched/touch)*100);
     }
 
     /**
@@ -205,13 +225,14 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
     protected void onDraw(Canvas canvas) {
         canvas.drawColor(Color.WHITE);
 
-        canvas.drawText("Time in seconds: " + time + "         Touched: " + touching, 0, 30, textPaint);
-        canvas.drawText("POSITION X = " + x + "; Y = " + y , 0, 50, textPaint);
-        canvas.drawText("VELOCITY VX = "+String.format("%.2f",vx)+"; VY = "+String.format("%.2f", vy)+"",0, 70, textPaint);
-        canvas.drawText("SCREEN SIZE Width = "+getWidth()+"; Height = "+getHeight()+".", 0, 90, textPaint);
-        canvas.drawText("BALL TOUCHED " + z + " times" , 0, 110, textPaint);
-        canvas.drawText("TOTAL TOUCHES: " + touch + " times" , 0, 130, textPaint);
-        canvas.drawText("SUCCESS RATE: " + rate + " %" , 0, 150, textPaint);
+        canvas.drawText("Time in seconds: " + time, width / 2, 30, timePaint);
+        canvas.drawText("Touched: "+touching, 0, 50, textPaint);
+        canvas.drawText("POSITION X = " + x + "; Y = " + y , 0, 70, textPaint);
+        canvas.drawText("VELOCITY VX = "+String.format("%.2f",vx)+"; VY = "+String.format("%.2f", vy)+"",0, 90, textPaint);
+        canvas.drawText("SCREEN SIZE Width = "+getWidth()+"; Height = "+getHeight()+".", 0, 110, textPaint);
+        canvas.drawText("BALL TOUCHED " + touched + " times" , 0, 130, textPaint);
+        canvas.drawText("TOTAL TOUCHES: " + touch + " times" , 0, 150, textPaint);
+        canvas.drawText("SUCCESS RATE: " + rate + " %" , 0, 170, textPaint);
         canvas.drawCircle(x, y, circleRadius, circlePaint);
     }
 
@@ -273,6 +294,43 @@ public class AnimationView extends SurfaceView implements SurfaceHolder.Callback
         loop.isRunning(true);
         loop.start();
 
+    }
+
+    public void alertDialog() {
+        /*
+                                * Alert Dialog
+                                * */
+
+        if(time  == 10){
+
+            AlertDialog alert = new AlertDialog.Builder(getContext())
+                    .setTitle("Title")
+                    .setMessage("Time is up \n ball touched "+touched+" times")
+                    .setPositiveButton("Play again", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // continue with delete
+                            time = 0;
+                            touched = 0;
+                            touch = 0;
+                            dialog.dismiss();
+                        }
+                    })
+                    .setNegativeButton("Continue", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                            dialog.dismiss();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+
+            alert.setCanceledOnTouchOutside(false);
+
+        }
+
+                                /*
+                                * Finish Alert Dialog
+                                * */
     }
 
     /**

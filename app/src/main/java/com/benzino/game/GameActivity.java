@@ -2,9 +2,12 @@ package com.benzino.game;
 
 import android.app.Activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,6 +49,12 @@ public class GameActivity extends Activity {
                             @Override
                             public void run() {
                                 view.incrementTime(1);
+                                if(view.getTime() %10 == 0){
+                                    Log.d("ANAS", "TIME: "+ view.getTime()+" seconds...");
+                                    Log.d("ANAS", "--------Ball Touched: " + view.getTouched() + "times-------");
+                                }
+
+                            view.alertDialog();
                             }
                         });
                     }
@@ -56,20 +65,21 @@ public class GameActivity extends Activity {
 
         t.start();
 
+
         view.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                int h = (int)(event.getX());
-                int d = (int)(view.getX() + view.getCircleRadius());
-                int l = (int)(view.getX() - view.getCircleRadius());
+                int h = (int) (event.getX());
+                int d = (int) (view.getX() + view.getCircleRadius());
+                int l = (int) (view.getX() - view.getCircleRadius());
 
-                int i = (int)(event.getY());
-                int j = (int)(view.getY() + view.getCircleRadius());
-                int k = (int)(view.getY() - view.getCircleRadius());
+                int i = (int) (event.getY());
+                int j = (int) (view.getY() + view.getCircleRadius());
+                int k = (int) (view.getY() - view.getCircleRadius());
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        if ( l < h && h < d && k < i && i <j ) {
+                        if (l < h && h < d && k < i && i < j) {
                             Log.d("ANAS", "------------------->>TOUCHED");
                             view.setX(event.getX());
                             view.setY(event.getY());
@@ -96,6 +106,11 @@ public class GameActivity extends Activity {
                         view.setY(event.getY());
                         view.setTouching(true);
                         Log.d("ANAS", "------------------->>ACTION MOVE");
+                        break;
+
+                    case MotionEvent.ACTION_OUTSIDE:
+                        //finger presses outside the dialog box
+                        Log.d("ANAS", "*********ACTION OUTSIDE********");
                         break;
 
                     default:

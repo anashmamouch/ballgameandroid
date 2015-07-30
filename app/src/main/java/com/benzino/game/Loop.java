@@ -61,6 +61,7 @@ public class Loop extends Thread {
                 try{
                     canvas = holder.lockCanvas(null);
                     view.updatePhysics();
+                    //view.alertDialog();
                     view.onDraw(canvas);
                 }finally{
                     if(canvas !=null)
